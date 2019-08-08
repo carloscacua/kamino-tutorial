@@ -1,0 +1,8 @@
+plugins {
+    id 'com.mahisoft.kamino.parent' version '1.0.37'
+}
+
+versionInfo {
+    major = 1
+    minor = 0
+}

@@ -1,0 +1,50 @@
+apply plugin: 'com.mahisoft.kamino.microservice'
+
+// Change this value according with the name of your customer name.
+// By convention this should start with the domain name your your customer's web site or product.
+// If you're doing a personal test your could use your github name, like com.github.ovargas.
+// Additionally the group name could be followed by any other name you want to use to group your components/services
+// Ex. com.mahisoft.kamino
+
+group = 'com.mahisoft'
+
+
+// The first part of the tag name represents the docker repository where you want to place
+// your image, if your're working with customer's private repository you can change
+// gcr.io/kamino-182816 your the value that matches the target repository for your image.
+distDocker {
+    tag = "gcr.io/kamino-182816/${project.name}"
+}
+
+dependencies {
+
+    // This dependency will add the base artifact needed to build a Kamino project.
+    // Notice with put ".+" at the end of the version to indicate we want to get the latest SNAPSHOT available
+    // this is pretty convenient when we don't know which is the latest version, but it is recommended to use
+    // a specific version to avoid issues with cached versions in your local or Jenkins.
+    compile('com.mahisoft.kamino:common-beans:1.0.+')
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+
+test {
+    jacocoTestReport {
+        afterEvaluate {
+            classDirectories = files(classDirectories.files.collect {
+                fileTree(dir: it, excludes: [
+                        '**/*Application.class'
+                ])
+            })
+        }
+    }
+
+    jacocoTestCoverageVerification {
+        afterEvaluate {
+            classDirectories = files(classDirectories.files.collect {
+                fileTree(dir: it, excludes: [
+                        '**/*Application.class'
+                ])
+            })
+        }
+    }
+}

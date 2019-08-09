@@ -1,0 +1,7 @@
+# We always want to disable the security for testing unless you
+# need to test a different aspect on your application.
+security.basic.enabled: false
+
+server:
+  port: 0
+  contextPath: /api

@@ -1,5 +1,9 @@
 package com.mahisoft.tutorial.service.controller;
 
+import com.mahisoft.tutorial.service.controller.dto.CreateProductRequest;
+import com.mahisoft.tutorial.service.controller.dto.PartialUpdateProductRequest;
+import com.mahisoft.tutorial.service.controller.dto.ProductItem;
+import com.mahisoft.tutorial.service.controller.dto.UpdateProductRequest;
 import com.mahisoft.tutorial.service.service.TutorialService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -8,10 +12,9 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 @Api(value = "vi/tutorial", description = "Tutorial API")
 @RestController
@@ -19,18 +22,41 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class TutorialController {
 
-    @Autowired
-    private TutorialService service;
+    private final TutorialService service;
 
-    @ApiOperation("Returns a greeting for a given person")
+    @ApiOperation("Returns the information of the given product id")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 500, message = "Internal server error")
     })
-    @GetMapping("/{person}")
-    public String get(
-            @ApiParam(value = "Name of the person to greet", required = true)
-            @PathVariable String person) {
-        return service.getGreeting(person);
+    @GetMapping("/{id}")
+    public ProductItem get(
+            @ApiParam(value = "The id of the product", required = true)
+            @PathVariable Long id) {
+        return service.getProduct(id);
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Long createProduct(@RequestBody @Validated CreateProductRequest request) {
+        return service.createProduct(request);
+    }
+
+    @PutMapping(value = "/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateProduct(@PathVariable Long id, @RequestBody @Validated UpdateProductRequest request) {
+        service.updateProduct(id, request);
+    }
+
+    @PatchMapping(value = "/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void partialUpdateProduct(@PathVariable Long id, @RequestBody @Validated PartialUpdateProductRequest request) {
+        service.partialUpdateProduct(id, request);
+    }
+
+    @DeleteMapping(value = "/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProduct(@PathVariable Long id) {
+        service.deleteProduct(id);
     }
 }

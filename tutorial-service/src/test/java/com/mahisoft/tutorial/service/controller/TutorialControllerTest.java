@@ -11,12 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -27,6 +27,7 @@ import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+
 public class TutorialControllerTest {
     @LocalServerPort
     private int port;
@@ -36,6 +37,24 @@ public class TutorialControllerTest {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Test
+    public void getAllProductTest() {
+
+        CreateProductRequest original = CreateProductRequest
+                .builder()
+                .name("Test Product")
+                .price(BigDecimal.valueOf(100L))
+                .category("Clearance")
+                .discount(25D)
+                .build();
+
+        createProduct(original);
+        createProduct(original);
+
+        List<ProductItem> list = getProducts().getBody();
+        Assert.assertNotNull(list);
+    }
 
     @Test
     public void getProductInfoTest() {
@@ -93,11 +112,6 @@ public class TutorialControllerTest {
         Assert.assertEquals("Response status doesn't match", HttpStatus.CREATED, response.getStatusCode());
         Assert.assertNotNull("Response value is null", response.getBody());
         Assert.assertTrue("The Id should be greater that 0", response.getBody() > 0);
-    }
-
-    private ResponseEntity<Long> createProduct(CreateProductRequest request) {
-        return restTemplate.postForEntity(String.format("http://localhost:%s%s/v1/tutorial", port, contextPath), request,
-                Long.class);
     }
 
     @Test
@@ -233,8 +247,73 @@ public class TutorialControllerTest {
         Assert.assertEquals(original.getDiscount(), productResponse.getBody().getDiscount());
     }
 
+    @Test
+    public void deleteProductTest() {
+        Long id = null;
+        try
+        {
+            CreateProductRequest original = CreateProductRequest
+                    .builder()
+                    .name("Test Product")
+                    .price(BigDecimal.valueOf(100L))
+                    .category("Clearance")
+                    .discount(25D)
+                    .build();
+
+            ResponseEntity<Long> createResponse = createProduct(original);
+
+            PartialUpdateProductRequest updateRequest = PartialUpdateProductRequest
+                    .builder()
+                    .status(StatusType.Inactive)
+                    .build();
+
+            id = createResponse.getBody();
+            partialUpdateProduct(id, updateRequest);
+
+            deleteProduct(id);
+            getProduct(id);
+
+            Assert.fail("Exception should be thrown");
+
+        }catch(ApiHttpClientErrorException ex)
+        {
+            Assert.assertEquals(ex.getError().getMessage(),
+                    String.format("Product '%s' not found.", id));
+        }
+    }
+
+    @Test
+    public void deleteActiveProductTest() {
+        Long id = null;
+        try
+        {
+            CreateProductRequest original = CreateProductRequest
+                    .builder()
+                    .name("Test Product")
+                    .price(BigDecimal.valueOf(100L))
+                    .category("Clearance")
+                    .discount(25D)
+                    .build();
+
+            ResponseEntity<Long> createResponse = createProduct(original);
+            id = createResponse.getBody();
+            deleteProduct(id);
+            Assert.fail("Exception should be thrown");
+
+        }catch(ApiHttpClientErrorException ex)
+        {
+            Assert.assertEquals(ex.getError().getMessage(),
+                    String.format("Product '%s' is active.", id));
+        }
+    }
+
     private ResponseEntity<ProductItem> getProduct(Long id){
         return restTemplate.getForEntity(String.format("http://localhost:%s%s/v1/tutorial/{id}", port, contextPath), ProductItem.class, id);
+    }
+
+    private ResponseEntity<List<ProductItem>> getProducts(){
+        return restTemplate.exchange(String.format("http://localhost:%s%s/v1/tutorial/", port, contextPath),
+                HttpMethod.GET, null, new ParameterizedTypeReference<List<ProductItem>>() {});
     }
 
     private ResponseEntity<Void> updateProduct(Long id, UpdateProductRequest request) {
@@ -253,6 +332,11 @@ public class TutorialControllerTest {
         restTemplate.delete(String.format("http://localhost:%s%s/v1/tutorial/{id}", port, contextPath), id,
                 HttpMethod.DELETE,
                 new HttpEntity<>(id), Void.class, id);
+    }
+
+    private ResponseEntity<Long> createProduct(CreateProductRequest request) {
+        return restTemplate.postForEntity(String.format("http://localhost:%s%s/v1/tutorial", port, contextPath), request,
+                Long.class);
     }
 
 }

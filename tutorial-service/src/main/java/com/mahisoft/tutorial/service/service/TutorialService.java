@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.validation.ValidationException;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +36,11 @@ public class TutorialService {
     }
 
     public ProductItem getProduct(Long id) {
-        ProductEntity product = getProductEntity(id);
+        return getProductItem(getProductEntity(id));
+    }
+
+    private ProductItem getProductItem(ProductEntity product)
+    {
         return ProductItem
                 .builder()
                 .category(product.getCategory())
@@ -44,6 +50,12 @@ public class TutorialService {
                 .id(product.getId())
                 .status(product.getStatus())
                 .build();
+    }
+
+    public List<ProductItem> getProducts()
+    {
+        List<ProductEntity> list =  repository.get();
+        return list.stream().map(s -> getProductItem(s)).collect(Collectors.toList());
     }
 
     private ProductEntity getProductEntity(Long id) {

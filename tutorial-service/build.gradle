@@ -32,6 +32,8 @@ test {
         afterEvaluate {
             classDirectories = files(classDirectories.files.collect {
                 fileTree(dir: it, excludes: [
+                        '**/dto/*.class',
+                        '**/*Entity*.class',
                         '**/*Application.class'
                 ])
             })
@@ -42,6 +44,8 @@ test {
         afterEvaluate {
             classDirectories = files(classDirectories.files.collect {
                 fileTree(dir: it, excludes: [
+                        '**/dto/*.class',
+                        '**/*Entity*.class',
                         '**/*Application.class'
                 ])
             })

@@ -5,16 +5,13 @@ import com.mahisoft.tutorial.service.controller.dto.PartialUpdateProductRequest;
 import com.mahisoft.tutorial.service.controller.dto.ProductItem;
 import com.mahisoft.tutorial.service.controller.dto.UpdateProductRequest;
 import com.mahisoft.tutorial.service.service.TutorialService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Api(value = "vi/tutorial", description = "Tutorial API")
 @RestController
@@ -58,5 +55,16 @@ public class TutorialController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable Long id) {
         service.deleteProduct(id);
+    }
+
+
+    @ApiOperation("Returns the information of all  the products")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 500, message = "Internal server error")
+    })
+    @GetMapping()
+    public List<ProductItem> getProducts() {
+        return service.getProducts();
     }
 }

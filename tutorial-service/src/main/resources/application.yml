@@ -1,5 +1,42 @@
+spring:
+  profiles: local
+  datasource:
+    url: jdbc:mysql://localhost:11000/localdb?autoReconnect=true&tinyInt1isBit=false&useSSL=false
+    username: root
+    password: 'mahisoft-dev'
+    driver-class-name: com.mysql.jdbc.Driver
+
+logging.level.com.mahisoft.tutorial.service: DEBUG
+
+#To avoid basic auth on the actuator endpoints
 security.basic.enabled: false
 
 server:
-  port: 9900
-  contextPath: /api
+  contextPath: /api #Service context path
+  port: 10000 #Put in here any port you want for testing
+
+oauth2.url: http://localhost:8080/ms-auth/api/oauth/token
+oauth2.client-id: platform-services
+oauth2.client-secret: 'secret'
+oauth2.grant.type: client_credentials
+oauth2:
+  auth:
+    # This section provides the public key to decode and interpret tokens
+    jwt:
+      keyValue: |
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy9CIGyYbSQ+cx3JHwQIW
+        kJbDaT6D+wLHdYVVpDBDyRSuZmuDL4h8HxkYa5fzW2PHq1vPxaGRuSWHNqu4GHSZ
+        fjjB7lrOuLMu8aw3NL9PDR6l4QUDG7JwnLFLCiQo8cAhCxr98mV1Muv/CY8bWS3y
+        8ojroeDLuSUWy5BVcqto8oCKQghe6Re0o7y21dD64IivYNKtDOLscrbZr3t7FtoA
+        Ll7jQJtaFVtqDVEAFyklbrNQAb/9xQOPydOyR8hGmYcfYSkwpR5B8GAVDgyRhqxB
+        r/grqeSOvDKxCI0NNzivkHwE3mtzPqFAwfyyCEhZkGVQdBkT3LYjxN6sMxwsjqI7
+        wwIDAQAB
+        -----END PUBLIC KEY-----
+
+#This is just to copy the values to ones spring expects without using the long names.
+security.oauth2.client.client-id: ${oauth2.client-id}
+security.oauth2.client.access-token-uri: ${oauth2.url}
+security.oauth2.client.grant-type: ${oauth2.grant.type}
+security.oauth2.resource.jwt.key-value: ${oauth2.auth.jwt.keyValue}
+security.oauth2.client.client-secret: ${oauth2.client-secret}

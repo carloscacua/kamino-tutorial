@@ -74,7 +74,7 @@ public class TutorialControllerTest {
 
         Assert.assertFalse("Name is null or empty", Strings.isNullOrEmpty(response.getBody().getName()));
         Assert.assertFalse("Category is null or empty", Strings.isNullOrEmpty(response.getBody().getCategory()));
-        Assert.assertEquals("Price doesn't match", BigDecimal.valueOf(100L), response.getBody().getPrice());
+        Assert.assertEquals("Price doesn't match", BigDecimal.valueOf(100L), noDecimalsRoundHalfUp(response.getBody().getPrice()));
         Assert.assertEquals("Discount doesn't match", 25D, response.getBody().getDiscount(), 0D);
     }
 
@@ -212,7 +212,7 @@ public class TutorialControllerTest {
 
         Assert.assertEquals(updateRequest.getName(), productResponse.getBody().getName());
         Assert.assertEquals(updateRequest.getCategory(), productResponse.getBody().getCategory());
-        Assert.assertEquals(updateRequest.getPrice(), productResponse.getBody().getPrice());
+        Assert.assertEquals(updateRequest.getPrice(), noDecimalsRoundHalfUp(productResponse.getBody().getPrice()));
         Assert.assertEquals(updateRequest.getDiscount(), productResponse.getBody().getDiscount());
         Assert.assertEquals(updateRequest.getStatus(), productResponse.getBody().getStatus());
     }
@@ -223,7 +223,7 @@ public class TutorialControllerTest {
         CreateProductRequest original = CreateProductRequest
                 .builder()
                 .name("Test Product")
-                .price(BigDecimal.valueOf(100L))
+                .price(BigDecimal.valueOf(100))
                 .category("Clearance")
                 .discount(25D)
                 .build();
@@ -243,7 +243,7 @@ public class TutorialControllerTest {
 
         Assert.assertEquals(updateRequest.getName(), productResponse.getBody().getName());
         Assert.assertEquals(original.getCategory(), productResponse.getBody().getCategory());
-        Assert.assertEquals(original.getPrice(), productResponse.getBody().getPrice());
+        Assert.assertEquals(original.getPrice(), noDecimalsRoundHalfUp(productResponse.getBody().getPrice()));
         Assert.assertEquals(original.getDiscount(), productResponse.getBody().getDiscount());
     }
 
@@ -305,6 +305,10 @@ public class TutorialControllerTest {
             Assert.assertEquals(ex.getError().getMessage(),
                     String.format("Product '%s' is active.", id));
         }
+    }
+
+    private BigDecimal noDecimalsRoundHalfUp(BigDecimal d) {
+        return d.setScale(0, BigDecimal.ROUND_HALF_UP);
     }
 
     private ResponseEntity<ProductItem> getProduct(Long id){

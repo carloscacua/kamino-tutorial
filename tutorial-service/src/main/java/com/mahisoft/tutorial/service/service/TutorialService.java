@@ -3,10 +3,13 @@ package com.mahisoft.tutorial.service.service;
 import com.google.common.base.Strings;
 import com.mahisoft.tutorial.service.controller.dto.*;
 import com.mahisoft.tutorial.service.service.domain.ProductEntity;
+import com.mahisoft.tutorial.service.service.mapper.ProductMapper;
 import com.mahisoft.tutorial.service.service.repository.TutorialDummyRepository;
+import com.mahisoft.tutorial.service.service.repository.TutorialRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import javax.validation.ValidationException;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -16,50 +19,40 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TutorialService {
 
-    private final TutorialDummyRepository repository;
+    //private final TutorialDummyRepository repository;
+    private final TutorialRepository realRepository;
 
     public String getGreeting(String person) {
         return String.format("Hello World %s!", person);
     }
 
+
+    @Transactional(rollbackOn = Exception.class)
     public Long createProduct(CreateProductRequest request) {
-        return repository.create(
-                ProductEntity
-                        .builder()
-                        .category(request.getCategory())
-                        .discount(request.getDiscount())
-                        .name(request.getName())
-                        .price(request.getPrice())
-                        .status(StatusType.Active)
-                        .build()
-        );
+        ProductEntity entity = ProductEntity
+                .builder()
+                .category(request.getCategory())
+                .discount(request.getDiscount())
+                .name(request.getName())
+                .price(request.getPrice())
+                .status(StatusType.Active)
+                .build();
+        ProductEntity savedRecord = realRepository.save(entity);
+        return savedRecord.getId();
     }
 
     public ProductItem getProduct(Long id) {
-        return getProductItem(getProductEntity(id));
-    }
-
-    private ProductItem getProductItem(ProductEntity product)
-    {
-        return ProductItem
-                .builder()
-                .category(product.getCategory())
-                .name(product.getName())
-                .discount(product.getDiscount())
-                .price(product.getPrice())
-                .id(product.getId())
-                .status(product.getStatus())
-                .build();
+        return ProductMapper.toDto(getProductEntity(id));
     }
 
     public List<ProductItem> getProducts()
     {
-        List<ProductEntity> list =  repository.get();
-        return list.stream().map(s -> getProductItem(s)).collect(Collectors.toList());
+        List<ProductEntity> list =  realRepository.findAll();
+        return list.stream().map(ProductMapper::toDto).collect(Collectors.toList());
     }
 
     private ProductEntity getProductEntity(Long id) {
-        ProductEntity product = repository.get(id);
+        ProductEntity product = realRepository.findOne(id);
         if (product == null) {
             throw new NoSuchElementException(String.format("Product '%s' not found.", id));
         }
@@ -75,7 +68,7 @@ public class TutorialService {
         product.setPrice(request.getPrice());
         product.setStatus(request.getStatus());
 
-        repository.update(product);
+        realRepository.save(product);
     }
 
     public void partialUpdateProduct(Long id, PartialUpdateProductRequest request) {
@@ -101,7 +94,7 @@ public class TutorialService {
             product.setStatus(request.getStatus());
         }
 
-        repository.update(product);
+        realRepository.save(product);
     }
 
     public void deleteProduct(Long id) {
@@ -111,6 +104,6 @@ public class TutorialService {
             throw new ValidationException(String.format("Product '%s' is active.", id));
         }
 
-        repository.delete(id);
+        realRepository.delete(id);
     }
 }

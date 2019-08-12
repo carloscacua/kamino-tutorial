@@ -23,6 +23,11 @@ dependencies {
     // this is pretty convenient when we don't know which is the latest version, but it is recommended to use
     // a specific version to avoid issues with cached versions in your local or Jenkins.
     compile('com.mahisoft.kamino:common-beans:1.0.+')
+    compile('org.flywaydb:flyway-core')
+    compile('org.hibernate:hibernate-validator')
+    compile('mysql:mysql-connector-java')
+    compile('org.hibernate:hibernate-java8')
+    compile('org.springframework.boot:spring-boot-starter-data-jpa')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 

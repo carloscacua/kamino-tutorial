@@ -5,3 +5,12 @@ security.basic.enabled: false
 server:
   port: 0
   contextPath: /api
+
+spring:
+  datasource:
+    #Connection String to connect to the DB
+    url: jdbc:mysql://localhost:11000/localdb?autoReconnect=true&tinyInt1isBit=false&useSSL=false
+    username: root
+    password: 'mahisoft-dev'
+    #Driver class name to use for JDBC implementation.
+    driver-class-name: com.mysql.jdbc.Driver
